@@ -49,25 +49,51 @@
                                     echo '<table style="width:100%">';
                                     echo '<tr>';
                                     echo '<th>Nome da máquina</th>';
-                                    echo '<th>UUID</th>';
+                                    // echo '<th>UUID</th>';
+                                    echo '<th>Sistema operacional</th>';
+                                    echo '<th></th>';
                                     echo '<th></th>';
                                     echo '</tr>';
                                     $length = count($result[0]);
+
+                                    // for ($i = 0; $i < $length; $i++) {
+                                    //     echo '<tr>';
+                                    //     echo '<td>'.$result[0][$i].'</td>';
+                                    //     echo '<td>'.$result[1][$i].'</td>';
+                                    //     // echo '<td>'.$result[3][$i].'</td>';
+                                    //     // echo "<td><a href='execute.php?machine=".$result[0][$i]."&system=".trim($result[3][$i])."' title='Rodar'><i class='fa fa-play-circle-o'></i></a></td>";
+                                    //     echo '<td><form action="execute.php" method="get" id="executeForm" onsubmit="return execute()">
+                                    //             <input type="hidden" id="machine" name="machine" value="'.$result[0][$i].'">
+                                    //             <input type="hidden" id="system" name="system" value="'.$result[3][$i].'">
+                                    //             <button type="submit" class="btn btn-secondary btn-sm"><i class="fa fa-play-circle-o"></i></button>
+                                    //           </form></td>';
+                                    //         //   <button type="submit" class="btn btn-primary"><i class="fa fa-play-circle-o"></i></button>
+                                    //     echo '</tr>';
+                                    // }
+
                                     for ($i = 0; $i < $length; $i++) {
                                         echo '<tr>';
                                         echo '<td>'.$result[0][$i].'</td>';
-                                        echo '<td>'.$result[1][$i].'</td>';
+                                        echo '<td>'.$result[3][$i].'</td>';
                                         // echo '<td>'.$result[3][$i].'</td>';
                                         // echo "<td><a href='execute.php?machine=".$result[0][$i]."&system=".trim($result[3][$i])."' title='Rodar'><i class='fa fa-play-circle-o'></i></a></td>";
                                         echo '<td><form action="execute.php" method="get" id="executeForm" onsubmit="return execute()">
-                                                <input type="hidden" id="machine" name="machine" value="'.$result[0][$i].'">
-                                                <input type="hidden" id="system" name="system" value="'.$result[3][$i].'">
-                                                <button type="submit" class="btn btn-secondary btn-sm"><i class="fa fa-play-circle-o"></i></button>
-                                              </form></td>';
+                                                <input type="hidden" id="machine1" name="machine1" value="'.$result[0][$i].'">
+                                                <input type="hidden" id="system1" name="system1" value="'.$result[3][$i].'">
+                                                <button type="submit" class="btn btn-success btn-sm action_btn"><i class="fa fa-play-circle-o"></i></button>
+                                              </form>
+                                              </td>';
+                                        echo '<td><form action="delete.php" method="get" id="removeForm" onsubmit="return remove()">
+                                              <input type="hidden" id="machine2" name="machine2" value="'.$result[0][$i].'">
+                                              <button type="submit" class="btn btn-danger btn-sm action_btn"><i class="fa fa-trash-o"></i></button>
+                                            </form>
+                                            </td>';
+                                        
                                             //   <button type="submit" class="btn btn-primary"><i class="fa fa-play-circle-o"></i></button>
                                         echo '</tr>';
                                     }
-                                    // message('sucesso', 'A máquina está sendo clonada. Isto pode demorar um pouco...');
+
+                                    // message('ok_alert', 'A máquina está sendo clonada. Isto pode demorar um pouco...');
                                     echo '</tr>';
                                     echo '</table>';
                                 ?>
@@ -115,7 +141,11 @@
                                             <option value="generic">Driver genérico</option>
                                         </select>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">Clonar máquina virtual</button>
+                                    <div class="form-group">
+                                        <label for="cloneMachineIP">IP da nova máquina</label>
+                                        <input class="form-control" name="cloneMachineIP" id="cloneMachineIP" placeholder="IP da nova máquina...">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Clonar e iniciar máquina</button>
                                 </form>
                             </div>
                         </div>
@@ -154,29 +184,6 @@
         };
         input2.oninput();
     </script>
-    <script>
-        function validateForm() {
-            var cloneMachineName = document.forms["cloneMachineForm"]["cloneMachineName"].value;
-            var machineToClone = document.forms["cloneMachineForm"]["machineToClone"].value;
-
-            if (cloneMachineName != '') {
-                if (cloneMachineName != machineToClone) {
-                    message('sucesso', 'A máquina está sendo clonada. Isto pode demorar um pouco...');
-                    return true;
-                } else {
-                    message('erro', 'O nome da nova máquina não deve ser igual ao nome de uma máquina existente...');
-                    return false;
-                }
-            } else {
-                message('erro', 'O campo "Nome da nova máquina" deve ser preenchido...');
-                return false;
-            }
-        }
-
-        function execute() {
-            message('iniciando', 'A máquina está sendo iniciada. Isto pode demorar um pouco...');
-        }
-    </script>
     
     <script>
         function message(alerta, texto) {
@@ -184,7 +191,7 @@
 
             $("#alertResponse").empty();
 
-            if (alerta === 'sucesso') {
+            if (alerta === 'ok_alert') {
                 resposta = "<div class='alert alert-success alert-dismissible fade show text-center' role='alert'>" +
                 "<a href='#' class='close' data-dismiss='alert' aria-label='Close'>&times;</a>" +
                 texto + "</div>";
@@ -193,13 +200,8 @@
                 resposta = "<div class='alert alert-warning alert-dismissible fade show text-center' role='alert'>" +
                 "<a href='#' class='close' data-dismiss='alert' aria-label='Close'>&times;</a>" +
                 texto + "</div>";
-            } else if (alerta === 'erro') {
-
-            resposta = "<div class='alert alert-danger alert-dismissible fade show text-center' role='alert'>" +
-                "<a href='#' class='close' data-dismiss='alert' aria-label='Close'>&times;</a>" +
-                texto + "</div>";
-            } else if (alerta === 'iniciando') {
-                resposta = "<div class='alert alert-success alert-dismissible fade show text-center' role='alert'>" +
+            } else if (alerta === 'danger_alert') {
+                resposta = "<div class='alert alert-danger alert-dismissible fade show text-center' role='alert'>" +
                 "<a href='#' class='close' data-dismiss='alert' aria-label='Close'>&times;</a>" +
                 texto + "</div>";
             }
@@ -208,6 +210,40 @@
 
         };
     </script>
+
+    <script>
+        function validateForm() {
+            console.log('wtf');
+            var cloneMachineName = document.forms["cloneMachineForm"]["cloneMachineName"].value;
+            var machineToClone = document.forms["cloneMachineForm"]["machineToClone"].value;
+
+            if (cloneMachineName != '') {
+                if (cloneMachineName != machineToClone) {
+                    message('ok_alert', 'A máquina está sendo clonada. Em seguida, a máquina será iniciada. Isto pode demorar um pouco...');
+                    return true;
+                } else {
+                    message('danger_alert', 'O nome da nova máquina não deve ser igual ao nome de uma máquina existente...');
+                    return false;
+                }
+            } else {
+                message('danger_alert', 'O campo "Nome da nova máquina" deve ser preenchido...');
+                return false;
+            }
+        }
+
+        function remove() {
+            message('danger_alert', 'A máquina está sendo excluída. Isto pode demorar um pouco...');
+            return true;
+        }
+
+        function execute() {
+            message('ok_alert', 'A máquina está sendo iniciada. Isto pode demorar um pouco...');
+            return true;
+        }
+
+        
+    </script>
+    
 </body>
 
 </html>
