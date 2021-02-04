@@ -55,6 +55,7 @@
                                     echo '<th></th>';
                                     echo '</tr>';
                                     $length = count($result[0]);
+                                    $result_to_json=json_encode((array)$result[0]);
 
                                     // for ($i = 0; $i < $length; $i++) {
                                     //     echo '<tr>';
@@ -130,7 +131,7 @@
                                         <input type="range" class="form-control-range" name="cloneMachineCpuSize" id="cloneMachineCpuSize" min="1" max="4" value="1" step="1">
                                         <span id="cloneMachineCpuSizeOutput">1</span>
                                     </div>
-                                    <div class="form-group">
+                                    <!-- <div class="form-group">
                                         <label for="networkingConfig">Configurações de rede da nova máquina</label>
                                         <select class="form-control" name="networkingConfig" id="networkingConfig">
                                             <option value="nat">NAT</option>
@@ -140,7 +141,7 @@
                                             <option value="hostonly">Host-only</option>
                                             <option value="generic">Driver genérico</option>
                                         </select>
-                                    </div>
+                                    </div> -->
                                     <div class="form-group">
                                         <label for="cloneMachineIP">IP da nova máquina</label>
                                         <input class="form-control" name="cloneMachineIP" id="cloneMachineIP" placeholder="IP da nova máquina...">
@@ -213,12 +214,14 @@
 
     <script>
         function validateForm() {
-            console.log('wtf');
             var cloneMachineName = document.forms["cloneMachineForm"]["cloneMachineName"].value;
             var machineToClone = document.forms["cloneMachineForm"]["machineToClone"].value;
 
+            var fromPHP=<?php echo $result_to_json ?>;
+            // console.log(fromPHP.includes(cloneMachineName));
+
             if (cloneMachineName != '') {
-                if (cloneMachineName != machineToClone) {
+                if (!(fromPHP.includes(cloneMachineName))) {
                     message('ok_alert', 'A máquina está sendo clonada. Em seguida, a máquina será iniciada. Isto pode demorar um pouco...');
                     return true;
                 } else {
