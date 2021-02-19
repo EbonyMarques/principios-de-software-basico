@@ -2,15 +2,12 @@
 <html lang="pt-br">
 
 <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
         integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 
-    <!-- <link rel="stylesheet" type="text/css" href="css/main.css"> -->
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
 
     <title>Clonar máquinas virtuais</title>
@@ -49,7 +46,6 @@
                                     echo '<table style="width:100%">';
                                     echo '<tr>';
                                     echo '<th>Nome da máquina</th>';
-                                    // echo '<th>UUID</th>';
                                     echo '<th>Sistema operacional</th>';
                                     echo '<th></th>';
                                     echo '<th></th>';
@@ -57,27 +53,11 @@
                                     $length = count($result[0]);
                                     $result_to_json=json_encode((array)$result[0]);
 
-                                    // for ($i = 0; $i < $length; $i++) {
-                                    //     echo '<tr>';
-                                    //     echo '<td>'.$result[0][$i].'</td>';
-                                    //     echo '<td>'.$result[1][$i].'</td>';
-                                    //     // echo '<td>'.$result[3][$i].'</td>';
-                                    //     // echo "<td><a href='execute.php?machine=".$result[0][$i]."&system=".trim($result[3][$i])."' title='Rodar'><i class='fa fa-play-circle-o'></i></a></td>";
-                                    //     echo '<td><form action="execute.php" method="get" id="executeForm" onsubmit="return execute()">
-                                    //             <input type="hidden" id="machine" name="machine" value="'.$result[0][$i].'">
-                                    //             <input type="hidden" id="system" name="system" value="'.$result[3][$i].'">
-                                    //             <button type="submit" class="btn btn-secondary btn-sm"><i class="fa fa-play-circle-o"></i></button>
-                                    //           </form></td>';
-                                    //         //   <button type="submit" class="btn btn-primary"><i class="fa fa-play-circle-o"></i></button>
-                                    //     echo '</tr>';
-                                    // }
-
                                     for ($i = 0; $i < $length; $i++) {
                                         echo '<tr>';
                                         echo '<td>'.$result[0][$i].'</td>';
                                         echo '<td>'.$result[3][$i].'</td>';
-                                        // echo '<td>'.$result[3][$i].'</td>';
-                                        // echo "<td><a href='execute.php?machine=".$result[0][$i]."&system=".trim($result[3][$i])."' title='Rodar'><i class='fa fa-play-circle-o'></i></a></td>";
+
                                         echo '<td><form action="execute.php" method="get" id="executeForm" onsubmit="return execute()">
                                                 <input type="hidden" id="machine1" name="machine1" value="'.$result[0][$i].'">
                                                 <input type="hidden" id="system1" name="system1" value="'.$result[3][$i].'">
@@ -90,11 +70,9 @@
                                             </form>
                                             </td>';
                                         
-                                            //   <button type="submit" class="btn btn-primary"><i class="fa fa-play-circle-o"></i></button>
                                         echo '</tr>';
                                     }
 
-                                    // message('ok_alert', 'A máquina está sendo clonada. Isto pode demorar um pouco...');
                                     echo '</tr>';
                                     echo '</table>';
                                 ?>
@@ -107,12 +85,24 @@
                                 <h4>Clonar máquina virtual</h4>
                                 <div style="height:10px;font-size:1px;">&nbsp;</div>
                                 <form action="clone.php" method="post" id="cloneMachineForm" onsubmit="return validateForm()">
+                                    <?php 
+                                        foreach($result[0] as $value) {
+                                            echo '<input type="hidden" id= "machines" name="machines[]" value="'. $value. '">';
+                                        }
+
+                                        foreach($result[3] as $value) {
+                                            echo '<input type="hidden" id= "systems" name="systems[]" value="'. $value. '">';
+                                        }
+                                    ?>
+
+                                    
                                     <div class="form-group">
-                                        <label for="machineToClone">Máquina virtual a ser clonada</label>
-                                        <select class="form-control" name="machineToClone" id="machineToClone">
+                                        <label for="indexOfDataToClone">Máquina virtual a ser clonada</label>
+                                        <select class="form-control" name="indexOfDataToClone" id="indexOfDataToClone">
                                             <?php
-                                                foreach($result[0] as $machine) {
-                                                    echo '<option value="'. $machine .'">' . $machine . '</option>';
+                                                $max = sizeof($result[0]);
+                                                for($i = 0; $i < $max; $i++) {
+                                                    echo '<option value="'. $i .'">' . $result[0][$i] . '</option>';
                                                 }
                                             ?>
                                         </select>
@@ -131,17 +121,6 @@
                                         <input type="range" class="form-control-range" name="cloneMachineCpuSize" id="cloneMachineCpuSize" min="1" max="4" value="1" step="1">
                                         <span id="cloneMachineCpuSizeOutput">1</span>
                                     </div>
-                                    <!-- <div class="form-group">
-                                        <label for="networkingConfig">Configurações de rede da nova máquina</label>
-                                        <select class="form-control" name="networkingConfig" id="networkingConfig">
-                                            <option value="nat">NAT</option>
-                                            <option value="natnetwork">Rede NAT</option>
-                                            <option value="bridged">Placa em modo bridge</option>
-                                            <option value="intnet">Rede interna</option>
-                                            <option value="hostonly">Host-only</option>
-                                            <option value="generic">Driver genérico</option>
-                                        </select>
-                                    </div> -->
                                     <div class="form-group">
                                         <label for="cloneMachineIP">IP da nova máquina</label>
                                         <input class="form-control" name="cloneMachineIP" id="cloneMachineIP" placeholder="IP da nova máquina...">
@@ -157,12 +136,8 @@
     </main>
 
 
-    <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script> -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
         integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
         crossorigin="anonymous"></script>
@@ -215,10 +190,7 @@
     <script>
         function validateForm() {
             var cloneMachineName = document.forms["cloneMachineForm"]["cloneMachineName"].value;
-            var machineToClone = document.forms["cloneMachineForm"]["machineToClone"].value;
-
             var fromPHP=<?php echo $result_to_json ?>;
-            // console.log(fromPHP.includes(cloneMachineName));
 
             if (cloneMachineName != '') {
                 if (!(fromPHP.includes(cloneMachineName))) {
@@ -232,6 +204,7 @@
                 message('danger_alert', 'O campo "Nome da nova máquina" deve ser preenchido...');
                 return false;
             }
+
         }
 
         function remove() {

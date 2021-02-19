@@ -1,37 +1,46 @@
 <?php
-    $machineToClone = $_POST['machineToClone'];
+    function recuperaPropriedade($cloneMachineName) {
+        return shell_exec('"C:\Program Files\Oracle\Virtualbox\VBoxManage.exe" guestproperty get "'.$cloneMachineName.'" /VirtualBox/GuestInfo/Net/0/V4/IP');
+    }
+?>
+
+<?php
+    $indexOfDataToClone = $_POST['indexOfDataToClone'];
     $cloneMachineName = $_POST['cloneMachineName'];
     $cloneMachineMemorySize = $_POST['cloneMachineMemorySize'];
     $cloneMachineCpuSize = $_POST['cloneMachineCpuSize'];
-    // $networkingConfig = $_POST['networkingConfig'];
     $cloneMachineIP = $_POST['cloneMachineIP'];
+    $machines = $_POST['machines'];
+    $systems = $_POST['systems'];
 
-    chdir('C:/Program Files/Oracle/VirtualBox');
+    shell_exec('"C:\Program Files\Oracle\Virtualbox\VBoxManage.exe" clonevm "'.$machines[$indexOfDataToClone].'" --name="'.$cloneMachineName.'" --register --mode=all');
+    shell_exec('"C:\Program Files\Oracle\Virtualbox\VBoxManage.exe" modifyvm "'.$cloneMachineName.'" --memory='.$cloneMachineMemorySize.' --cpus='.$cloneMachineCpuSize);
+    shell_exec('"C:\Program Files\Oracle\Virtualbox\VBoxManage.exe" startvm "'.$cloneMachineName.'"');
 
-    // $result = shell_exec('script.bat "Ubuntu 12.04.5" "Clone de Ubuntu 12.04.5" "4096" "1" "nat" "192.168.0.1" "root" "123456789"');
+    $result1 = recuperaPropriedade($cloneMachineName);
 
-    shell_exec('VBoxManage clonevm "'.$machineToClone.'" --name="'.$cloneMachineName.'" --register --mode=all');
-    // shell_exec('VBoxManage modifyvm "'.$cloneMachineName.'" --memory='.$cloneMachineMemorySize.' --cpus='.$cloneMachineCpuSize.' --nic0='.$networkingConfig);
-    shell_exec('VBoxManage modifyvm "'.$cloneMachineName.'" --memory='.$cloneMachineMemorySize.' --cpus='.$cloneMachineCpuSize);
- 
-    $username = 'root';
-    $password = '123456789';
-    
-    shell_exec('VBoxManage startvm "'.$cloneMachineName.'"');
-
-    function recuperaPropriedade($cloneMachineName) {
-        return shell_exec('VBoxManage guestproperty get "'.$cloneMachineName.'" /VirtualBox/GuestInfo/Net/0/V4/IP');
+    if (strpos($systems[$indexOfDataToClone], 'Windows')) {
+        echo 'Windows';
+        $username = 'admin';
+        $password = '123456789';
+        
+        while (trim($result1) != ('Value: '.trim($cloneMachineIP))) {
+            $result1 = recuperaPropriedade($cloneMachineName);
+            $result2 = shell_exec('"C:\Program Files\Oracle\Virtualbox\VBoxManage.exe" guestcontrol "'. $cloneMachineName .'" run --username '.$username.' --password '.$password.' --wait-stdout --wait-stderr --exe "C:\Windows\System32\cmd.exe" -- cmd.exe/arg0 /C powershell ' . '"Start-Process -Verb RunAs cmd.exe ' . "'/c netsh interface ip set address name=".'"Ethernet"'. " static " . $cloneMachineIP ." 255.255.255.0 10.0.2.2'" .'"');
+            $result3 = shell_exec('"C:\Program Files\Oracle\Virtualbox\VBoxManage.exe" guestcontrol "'. $cloneMachineName .'" run --username '.$username.' --password '.$password.' --wait-stdout --wait-stderr --exe "C:\Windows\System32\cmd.exe" -- cmd.exe/arg0 /C powershell ' . '"Start-Process -Verb RunAs cmd.exe ' . "'/c netsh interface ip set dnsserver ".'"Ethernet"'. " static 8.8.8.8" .'"');
+        }
+    } else {
+        echo 'Linux';
+        $username = 'root';
+        $password = '123456789';
+        
+        while (trim($result1) != ('Value: '.trim($cloneMachineIP))) {
+            $result1 = recuperaPropriedade($cloneMachineName);
+            $result2 = shell_exec('"C:\Program Files\Oracle\Virtualbox\VBoxManage.exe" --nologo guestcontrol "'.$cloneMachineName.'" run --exe "/sbin/ifconfig" --username '.$username.' --password '.$password.' --wait-stdout -- ifconfig eth0 '.$cloneMachineIP . ' netmask 255.255.255.0');
+            $result3 = shell_exec('"C:\Program Files\Oracle\Virtualbox\VBoxManage.exe" --nologo guestcontrol "'.$cloneMachineName.'" run --exe "/sbin/route" --username '.$username.' --password '.$password.' --wait-stdout -- route add default gw 10.0.2.2 eth0');
+        }
+        
     }
 
-    $result = recuperaPropriedade($cloneMachineName);
-
-    while (trim($result) == 'No value set!') {
-        $result = recuperaPropriedade($cloneMachineName);
-    }
-
-    shell_exec('VBoxManage --nologo guestcontrol "'.$cloneMachineName.'" run --exe "/sbin/ifconfig" --username '.$username.' --password '.$password.' --wait-stdout -- ifconfig eth1 '.$cloneMachineIP.' netmask 255.0.0.0');
-    // shell_exec('VBoxManage controlvm "'.$cloneMachineName.'" savestate');
-
-    header('Location: index.php');
-    
+    header('Location: index.php');  
 ?>

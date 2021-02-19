@@ -1,5 +1,0 @@
-cd C:/Program Files/Oracle/VirtualBox
-VBoxManage.exe guestproperty get "Ubuntu 12.04.5" /VirtualBox/GuestInfo/Net/0/V4/IP
-VBoxManage.exe guestproperty get "Clone de Ubuntu 12.04.5" /VirtualBox/GuestInfo/Net/0/V4/IP
-
-VBoxManage --nologo guestcontrol "Clone de Ubuntu 12.04.5" run --exe "/sbin/ifconfig" --username root --password 123456789 --wait-stdout -- ifconfig eth1 192.168.0.1 netmask 255.0.0.0
